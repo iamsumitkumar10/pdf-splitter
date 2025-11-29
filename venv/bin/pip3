@@ -1,4 +1,4 @@
-#!/home/sumit/Desktop/PDF_SPLITER/venv/bin/python3
+#!/home/sumit/Desktop/pdf-splitter/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

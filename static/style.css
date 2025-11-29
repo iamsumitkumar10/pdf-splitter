@@ -24,23 +24,79 @@ body {
 .header {
     background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
     color: white;
-    padding: 40px 30px;
+    padding: 28px 30px 18px 30px;
     text-align: center;
 }
 
 .header h1 {
-    font-size: 2.5em;
-    margin-bottom: 10px;
+    font-size: 2.2em;
+    margin-bottom: 6px;
     font-weight: 300;
 }
 
 .header p {
-    font-size: 1.1em;
-    opacity: 0.9;
+    font-size: 1em;
+    opacity: 0.95;
+    margin-bottom: 14px;
+}
+
+/* Tabs */
+.tabs {
+    display: inline-flex;
+    background: rgba(255,255,255,0.08);
+    border-radius: 999px;
+    padding: 6px;
+    gap: 6px;
+}
+
+.tab {
+    background: transparent;
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.18s ease;
+    outline: none;
+}
+
+.tab:hover {
+    transform: translateY(-2px);
+    opacity: 0.95;
+}
+
+.tab.active {
+    background: white;
+    color: #2c3e50;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+/* Divider between sections */
+.divider {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 0 30px;
+}
+
+/* Content & upload sections */
+.content {
+    padding-bottom: 10px;
 }
 
 .upload-section {
-    padding: 40px 30px;
+    padding: 30px;
+}
+
+.upload-section.visible {
+    display: block;
+}
+
+.upload-section[hidden] {
+    display: none;
 }
 
 .upload-form {
@@ -151,15 +207,24 @@ body {
     }
     
     .header h1 {
-        font-size: 2em;
+        font-size: 1.8em;
     }
     
     .header, .upload-section {
-        padding: 30px 20px;
+        padding: 20px;
     }
     
     .file-input-label {
-        padding: 15px 25px;
+        padding: 15px 20px;
+    }
+
+    .tabs {
+        gap: 4px;
+        padding: 5px;
+    }
+
+    .tab {
+        padding: 8px 12px;
     }
 }
 
