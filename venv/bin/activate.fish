@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV /home/sumit/Desktop/PDF_SPLITER/venv
+set -gx VIRTUAL_ENV /home/sumit/Desktop/pdf-splitter/venv
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH
