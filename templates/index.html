@@ -1,368 +1,62 @@
-<!-- <!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Splitter</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>PDF Splitter</h1>
-            <p>Upload a PDF; the server will convert each page into a separate PDF and return a ZIP file</p>
-        </div>
-        
-        <div class="upload-section">
-            <form method="post" action="/split" enctype="multipart/form-data" class="upload-form">
-                <div class="file-input-wrapper">
-                    <input type="file" name="pdf_file" accept="application/pdf" id="fileInput" required>
-                    <label for="fileInput" class="file-input-label">
-                        <span class="file-icon">📄</span>
-                        <span class="file-text">Choose PDF file</span>
-                    </label>
-                </div>
-                <div class="selected-file" id="selectedFile"></div>
-                <br>
-                <button type="submit" class="submit-btn">Split PDF</button>
-            </form>
-        </div>
-        
-        <div class="features">
-            <h3>Features:</h3>
-            <ul>
-                <li>✅ Each page is saved in a separate PDF file</li>
-                <li>✅ All files are packaged in a ZIP</li>
-                <li>✅ Fast processing</li>
-                <li>✅ Secure - files are processed directly</li>
-            </ul>
-        </div>
-    </div>
-
-    <script>
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const fileInput = e.target;
-            const selectedFileDiv = document.getElementById('selectedFile');
-            
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                selectedFileDiv.innerHTML = `
-                    <strong>Selected file:</strong> ${file.name} 
-                    <br><small>Size: ${(file.size / (1024 * 1024)).toFixed(2)} MB</small>
-                `;
-                selectedFileDiv.style.display = 'block';
-            } else {
-                selectedFileDiv.style.display = 'none';
-            }
-        });
-    </script>
-</body>
-</html> -->
-
-
-
-<!-- image to pdf added -->
-
-
-<!-- templates/html -->
-<!-- <!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Tools — Split & Image→PDF</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>PDF Tools</h1>
-            <p>Split PDFs into pages or convert images into a single PDF</p>
-        </div>
-        
-        <div class="upload-section">
-            <h2>PDF Splitter</h2>
-            <form method="post" action="/split" enctype="multipart/form-data" class="upload-form">
-                <div class="file-input-wrapper">
-                    <input type="file" name="pdf_file" accept="application/pdf" id="fileInput" required>
-                    <label for="fileInput" class="file-input-label">
-                        <span class="file-icon">📄</span>
-                        <span class="file-text">Choose PDF file</span>
-                    </label>
-                </div>
-                <div class="selected-file" id="selectedFile"></div>
-                <br>
-                <button type="submit" class="submit-btn">Split PDF</button>
-            </form>
-        </div>
-
-        <hr style="border:none;border-top:1px solid #eee;margin:0 30px;">
-
-        <div class="upload-section">
-            <h2>Images → PDF</h2>
-            <form method="post" action="/images-to-pdf" enctype="multipart/form-data" class="upload-form" id="imagesForm">
-                <div class="file-input-wrapper">
-                    <input type="file" name="images[]" accept="image/*" id="imagesInput" multiple required>
-                    <label for="imagesInput" class="file-input-label">
-                        <span class="file-icon">🖼️</span>
-                        <span class="file-text">Choose images (multiple)</span>
-                    </label>
-                </div>
-
-                <div class="selected-file" id="imagesSelected" style="display:none;"></div>
-
-                <div style="margin-top:12px;text-align:center;">
-                    <input type="text" name="output_name" placeholder="output filename (optional)" style="padding:8px 12px;border-radius:8px;border:1px solid #ddd;max-width:320px;">
-                </div>
-
-                <br>
-                <button type="submit" class="submit-btn">Convert to PDF</button>
-            </form>
-        </div>
-        
-        <div class="features">
-            <h3>Features:</h3>
-            <ul>
-                <li>✅ Each page is saved in a separate PDF file (split)</li>
-                <li>✅ Images converted into a single PDF (multi-page)</li>
-                <li>✅ All files are packaged in a ZIP (split) or returned as a PDF</li>
-                <li>✅ Fast processing</li>
-            </ul>
-        </div>
-    </div>
-
-    <script>
-        // PDF file selection display (existing)
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const fileInput = e.target;
-            const selectedFileDiv = document.getElementById('selectedFile');
-            
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                selectedFileDiv.innerHTML = `
-                    <strong>Selected file:</strong> ${file.name} 
-                    <br><small>Size: ${(file.size / (1024 * 1024)).toFixed(2)} MB</small>
-                `;
-                selectedFileDiv.style.display = 'block';
-            } else {
-                selectedFileDiv.style.display = 'none';
-            }
-        });
-
-        // Images selection display
-        document.getElementById('imagesInput').addEventListener('change', function(e) {
-            const files = e.target.files;
-            const selectedDiv = document.getElementById('imagesSelected');
-
-            if (files.length > 0) {
-                let html = `<strong>${files.length} file(s) selected:</strong><ul style="text-align:left;margin-top:8px;">`;
-                for (let i = 0; i < files.length; i++) {
-                    const f = files[i];
-                    html += `<li>${f.name} — ${(f.size / (1024 * 1024)).toFixed(2)} MB</li>`;
-                }
-                html += `</ul>`;
-                selectedDiv.innerHTML = html;
-                selectedDiv.style.display = 'block';
-            } else {
-                selectedDiv.style.display = 'none';
-            }
-        });
-
-        // Optional: prevent double form submission (small UX improvement)
-        const forms = document.querySelectorAll('form.upload-form');
-        forms.forEach(f => {
-            f.addEventListener('submit', () => {
-                const btn = f.querySelector('button[type="submit"]');
-                if (btn) {
-                    btn.disabled = true;
-                    btn.innerText = "Processing...";
-                }
-            });
-        });
-    </script>
-</body>
-</html> -->
-
-
-
-
-
-
+<!-- templates/index.html -->
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Tools — Split & Image→PDF</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ConvertIQ — Home</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>PDF Tools</h1>
-            <p>Split PDFs into pages or convert images into a single PDF</p>
+  <div class="container">
 
-            <!-- New tabs for PDF / Images -->
-            <div class="tabs" role="tablist" aria-label="Tool tabs">
-                <button id="tabPdf" class="tab active" role="tab" aria-selected="true" aria-controls="pdfSection">📄 PDF</button>
-                <button id="tabImages" class="tab" role="tab" aria-selected="false" aria-controls="imagesSection">🖼️ Images</button>
-            </div>
-        </div>
-        
-        <div class="content">
-            <div id="pdfSection" class="upload-section visible" role="tabpanel" aria-labelledby="tabPdf">
-                <h2>PDF Splitter</h2>
-                <form method="post" action="/split" enctype="multipart/form-data" class="upload-form">
-                    <div class="file-input-wrapper">
-                        <input type="file" name="pdf_file" accept="application/pdf" id="fileInput" required>
-                        <label for="fileInput" class="file-input-label">
-                            <span class="file-icon">📄</span>
-                            <span class="file-text">Choose PDF file</span>
-                        </label>
-                    </div>
-                    <div class="selected-file" id="selectedFile"></div>
-                    <br>
-                    <button type="submit" class="submit-btn">Split PDF</button>
-                </form>
-            </div>
+    <!-- 🔥 HEADER + NAVBAR -->
+    <div class="header">
+      <h1>ConvertIQ</h1>
+      <p>Keep Your Data Safe</p>
 
-            <hr class="divider">
+      <div class="tabs" role="tablist">
+        <a href="{{ url_for('pdfsplit_page') }}"
+           class="tab">
+            📄 PDF Splitter
+        </a>
 
-            <div id="imagesSection" class="upload-section" role="tabpanel" aria-labelledby="tabImages" hidden>
-                <h2>Images → PDF</h2>
-                <form method="post" action="/images-to-pdf" enctype="multipart/form-data" class="upload-form" id="imagesForm">
-                    <div class="file-input-wrapper">
-                        <input type="file" name="images[]" accept="image/*" id="imagesInput" multiple required>
-                        <label for="imagesInput" class="file-input-label">
-                            <span class="file-icon">🖼️</span>
-                            <span class="file-text">Choose images (multiple)</span>
-                        </label>
-                    </div>
 
-                    <div class="selected-file" id="imagesSelected" style="display:none;"></div>
+        <a href="{{ url_for('pdf_to_images_page') }}" 
+            class="tab">
+              📝 PDF → Image
+        </a>
 
-                    <div style="margin-top:12px;text-align:center;">
-                        <input type="text" name="output_name" placeholder="output filename (optional)" style="padding:8px 12px;border-radius:8px;border:1px solid #ddd;max-width:320px;">
-                    </div>
+        <a href="{{ url_for('image_to_pdf_page') }}"
+           class="tab">
+            🖼️ Images → PDF
+        </a>
 
-                    <br>
-                    <button type="submit" class="submit-btn">Convert to PDF</button>
-                </form>
-            </div>
-        </div>
-        
-        <div class="features">
-            <h3>Features:</h3>
-            <ul>
-                <li>✅ Each page is saved in a separate PDF file (split)</li>
-                <li>✅ Images converted into a single PDF (multi-page)</li>
-                <li>✅ All files are packaged in a ZIP (split) or returned as a PDF</li>
-                <li>✅ Fast processing</li>
-            </ul>
-        </div>
+        <a href="{{ url_for('pdf_to_docx_page') }}" 
+            class="tab">
+              📝 PDF → Word
+        </a>
+
+      </div>
     </div>
 
-    <script>
-        // Tab switching logic
-        const tabPdf = document.getElementById('tabPdf');
-        const tabImages = document.getElementById('tabImages');
-        const pdfSection = document.getElementById('pdfSection');
-        const imagesSection = document.getElementById('imagesSection');
-        const divider = document.querySelector('.divider');
+    <div class="features" style="padding:30px;text-align:center;">
+      <h3>Select a Tool</h3>
+      <p style="margin-top:12px;color:#666;">
+        Choose from the tools above to begin.
+      </p>
+    </div>
+    
+    <div class="features">
+      <h3>Features:</h3>
+      <ul>
+        <li>Combine images into single PDF</li>
+        <li>High quality output</li>
+        <li>Split PDF into individual pages</li>
+        <li>Download output as ZIP</li>
+      </ul>
+    </div>
 
-        function showPdf() {
-            tabPdf.classList.add('active');
-            tabPdf.setAttribute('aria-selected', 'true');
-            tabImages.classList.remove('active');
-            tabImages.setAttribute('aria-selected', 'false');
-
-            pdfSection.hidden = false;
-            pdfSection.classList.add('visible');
-            imagesSection.hidden = true;
-            imagesSection.classList.remove('visible');
-
-            if (divider) divider.style.display = 'block';
-        }
-
-        function showImages() {
-            tabImages.classList.add('active');
-            tabImages.setAttribute('aria-selected', 'true');
-            tabPdf.classList.remove('active');
-            tabPdf.setAttribute('aria-selected', 'false');
-
-            imagesSection.hidden = false;
-            imagesSection.classList.add('visible');
-            pdfSection.hidden = true;
-            pdfSection.classList.remove('visible');
-
-            if (divider) divider.style.display = 'block';
-        }
-
-        tabPdf.addEventListener('click', showPdf);
-        tabImages.addEventListener('click', showImages);
-
-        // Keyboard support for tabs (Left/Right)
-        [tabPdf, tabImages].forEach((t) => {
-            t.addEventListener('keydown', (ev) => {
-                if (ev.key === 'ArrowRight' || ev.key === 'ArrowLeft') {
-                    ev.preventDefault();
-                    if (t === tabPdf) tabImages.focus();
-                    else tabPdf.focus();
-                }
-            });
-        });
-
-        // Existing file-selection displays (preserved)
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const fileInput = e.target;
-            const selectedFileDiv = document.getElementById('selectedFile');
-            
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                selectedFileDiv.innerHTML = `
-                    <strong>Selected file:</strong> ${file.name} 
-                    <br><small>Size: ${(file.size / (1024 * 1024)).toFixed(2)} MB</small>
-                `;
-                selectedFileDiv.style.display = 'block';
-            } else {
-                selectedFileDiv.style.display = 'none';
-            }
-        });
-
-        document.getElementById('imagesInput').addEventListener('change', function(e) {
-            const files = e.target.files;
-            const selectedDiv = document.getElementById('imagesSelected');
-
-            if (files.length > 0) {
-                let html = `<strong>${files.length} file(s) selected:</strong><ul style="text-align:left;margin-top:8px;">`;
-                for (let i = 0; i < files.length; i++) {
-                    const f = files[i];
-                    html += `<li>${f.name} — ${(f.size / (1024 * 1024)).toFixed(2)} MB</li>`;
-                }
-                html += `</ul>`;
-                selectedDiv.innerHTML = html;
-                selectedDiv.style.display = 'block';
-            } else {
-                selectedDiv.style.display = 'none';
-            }
-        });
-
-        // Prevent double submit
-        const forms = document.querySelectorAll('form.upload-form');
-        forms.forEach(f => {
-            f.addEventListener('submit', () => {
-                const btn = f.querySelector('button[type="submit"]');
-                if (btn) {
-                    btn.disabled = true;
-                    btn.innerText = "Processing...";
-                }
-            });
-        });
-
-        // Show PDF tab by default on load
-        document.addEventListener('DOMContentLoaded', () => {
-            showPdf();
-        });
-    </script>
+  </div>
 </body>
 </html>

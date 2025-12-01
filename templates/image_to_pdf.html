@@ -1,0 +1,97 @@
+
+<!-- templates/image_to_pdf.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ConvertIQ — Images to PDF</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+
+    <!-- 🔥 HEADER + NAVBAR -->
+    <div class="header">
+      <h1>ConvertIQ</h1>
+      <p>Images → PDF</p>
+
+      <div class="tabs" role="tablist">
+        <a href="{{ url_for('pdfsplit_page') }}"
+           class="tab">
+            📄 PDF Splitter
+        </a>
+      <a href="{{ url_for('pdf_to_images_page') }}" 
+          class="tab">
+            🖼️ PDF → Images
+      </a>
+
+
+        <a href="{{ url_for('image_to_pdf_page') }}"
+           class="tab active">
+            🖼️ Images → PDF
+        </a>
+
+        <a href="{{ url_for('pdf_to_docx_page') }}" class="tab">
+          📝 PDF → Word
+        </a>
+
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="upload-section">
+        <h2>Convert Images to PDF</h2>
+
+        <form method="post" action="{{ url_for('images_to_pdf') }}" enctype="multipart/form-data" class="upload-form">
+
+          <div class="file-input-wrapper">
+            <input type="file" name="images[]" accept="image/*" id="imagesInput" multiple required>
+            <label for="imagesInput" class="file-input-label">
+              <span class="file-icon">🖼️</span>
+              <span class="file-text">Choose Images</span>
+            </label>
+          </div>
+
+          <div class="selected-file" id="imagesSelected" style="display:none;"></div>
+
+          <div style="margin-top:12px;">
+            <input type="text" name="output_name" placeholder="output filename (optional)"
+              style="padding:8px 12px;border:1px solid #ccc;border-radius:8px;">
+          </div>
+
+          <br>
+          <button type="submit" class="submit-btn">Convert to PDF</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="features">
+        <p style="text-align:center;margin-top:12px;">
+        <a href="{{ url_for('index') }}">← Back to Home</a>
+      </p>
+    </div>
+
+    
+
+  </div>
+
+<script>
+document.getElementById('imagesInput').addEventListener('change', function(e) {
+    const files = e.target.files;
+    const div = document.getElementById('imagesSelected');
+
+    if (files.length > 0) {
+        let txt = `<strong>${files.length} images selected:</strong><ul>`;
+        for (let f of files) {
+            txt += `<li>${f.name} — ${(f.size/1024/1024).toFixed(2)} MB</li>`;
+        }
+        txt += "</ul>";
+        div.innerHTML = txt;
+        div.style.display = "block";
+    }
+});
+</script>
+
+</body>
+</html>
