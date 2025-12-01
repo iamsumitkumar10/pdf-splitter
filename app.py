@@ -41,6 +41,13 @@ def image_to_pdf_page():
 def pdf_to_docx_page():
     return render_template('pdf_to_docx.html')
 
+@app.route("/pdf-to-text")
+def pdf_to_text_page():
+    return render_template("pdf_to_text.html")
+
+
+
+
 @app.route("/split", methods=["POST"])
 def split_pdf():
     if 'pdf_file' not in request.files:
@@ -325,6 +332,56 @@ def pdf_to_docx_convert():
         as_attachment=True,
         download_name=download_name
     )
+
+@app.route("/pdf-to-text-convert", methods=["POST"])
+def pdf_to_text_convert():
+    if 'pdf_file' not in request.files:
+        abort(400, "No file part")
+
+    file = request.files['pdf_file']
+    if file.filename == "":
+        abort(400, "No selected file")
+
+    filename = secure_filename(file.filename)
+    if not filename.lower().endswith(".pdf"):
+        abort(400, "Uploaded file is not a PDF")
+
+    pdf_bytes = file.read()
+    if not pdf_bytes:
+        abort(400, "Empty file uploaded")
+
+    # open PDF with PyMuPDF
+    try:
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    except Exception as e:
+        abort(400, f"Invalid PDF: {e}")
+
+    # Extract text from each page
+    extracted_text = []
+    for page_num in range(doc.page_count):
+        page = doc.load_page(page_num)
+        extracted_text.append(page.get_text("text"))
+
+    doc.close()
+
+    # Join all page texts
+    final_text = "\n\n".join(extracted_text)
+
+    # return as .txt file
+    txt_bytes = io.BytesIO(final_text.encode("utf-8"))
+    txt_bytes.seek(0)
+
+    download_name = f"{os.path.splitext(filename)[0]}.txt"
+    return send_file(
+        txt_bytes,
+        mimetype="text/plain",
+        as_attachment=True,
+        download_name=download_name
+    )
+
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

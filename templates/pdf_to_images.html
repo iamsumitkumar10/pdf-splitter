@@ -10,14 +10,16 @@
 <body>
   <div class="container">
     <div class="header">
-      <h1>ConvertIQ</h1>
-      <p>PDF → Images</p>
+      <a href="{{ url_for('index') }}" style="text-decoration:none; color:inherit;">
+        <h1 style="cursor:pointer;">ConvertIQ</h1>
+      </a>
 
       <div class="tabs" role="tablist">
         <a href="{{ url_for('pdfsplit_page') }}" class="tab">📄 PDF Splitter</a>
         <a href="{{ url_for('pdf_to_images_page') }}" class="tab active">🖼️ PDF → Images</a>
         <a href="{{ url_for('image_to_pdf_page') }}" class="tab">🖼️ Images → PDF</a>
         <a href="{{ url_for('pdf_to_docx_page') }}" class="tab">📝 PDF → Word</a>
+        <a href="{{ url_for('pdf_to_text_page') }}" class="tab">📝 PDF → Text</a>
       </div>
     </div>
 

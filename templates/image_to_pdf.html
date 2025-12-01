@@ -13,8 +13,9 @@
 
     <!-- 🔥 HEADER + NAVBAR -->
     <div class="header">
-      <h1>ConvertIQ</h1>
-      <p>Images → PDF</p>
+      <a href="{{ url_for('index') }}" style="text-decoration:none; color:inherit;">
+        <h1 style="cursor:pointer;">ConvertIQ</h1>
+      </a>
 
       <div class="tabs" role="tablist">
         <a href="{{ url_for('pdfsplit_page') }}"
@@ -36,6 +37,10 @@
           📝 PDF → Word
         </a>
 
+        <a href="{{ url_for('pdf_to_text_page') }}" class="tab">
+          📝 PDF → Text
+        </a>
+
       </div>
     </div>
 
@@ -55,10 +60,10 @@
 
           <div class="selected-file" id="imagesSelected" style="display:none;"></div>
 
-          <div style="margin-top:12px;">
+          <!-- <div style="margin-top:12px;">
             <input type="text" name="output_name" placeholder="output filename (optional)"
               style="padding:8px 12px;border:1px solid #ccc;border-radius:8px;">
-          </div>
+          </div> -->
 
           <br>
           <button type="submit" class="submit-btn">Convert to PDF</button>

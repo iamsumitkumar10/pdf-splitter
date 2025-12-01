@@ -12,8 +12,9 @@
 
     <!-- 🔥 HEADER + NAVBAR -->
     <div class="header">
-      <h1>ConvertIQ</h1>
-      <p>PDF → Word (DOCX)</p>
+      <a href="{{ url_for('index') }}" style="text-decoration:none; color:inherit;">
+        <h1 style="cursor:pointer;">ConvertIQ</h1>
+      </a>
 
       <div class="tabs" role="tablist">
 
@@ -33,6 +34,10 @@
 
         <a href="{{ url_for('pdf_to_docx_page') }}" class="tab active">
           📝 PDF → Word
+        </a>
+
+        <a href="{{ url_for('pdf_to_text_page') }}" class="tab">
+          📝 PDF → Text
         </a>
 
       </div>
