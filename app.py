@@ -25,7 +25,7 @@ def index():
 
 @app.route("/pdfsplit")
 def pdfsplit_page():
-    return render_template('pdfsplit.html')
+    return render_template('pdf_split.html')
 
 # ---- PAGE: PDF -> Images----
 @app.route("/pdf-to-images")

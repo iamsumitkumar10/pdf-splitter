@@ -4,142 +4,191 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ConvertIQ — Merge PDFs</title>
+
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
   <style>
-    /* Small inline adjustments just for this page (keeps global style intact) */
-    .upload-section { padding: 28px; max-width:720px; margin:24px auto; background: #fff; border-radius:8px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
-    .file-list { margin-top:12px; font-size:14px; color:#333; }
-    .file-item { display:flex; justify-content:space-between; align-items:center; padding:6px 8px; border-radius:6px; background:#fbfbfb; margin-bottom:8px; border:1px solid #eee; }
-    .file-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:78%; }
-    .remove-btn { background:transparent; border:0; color:#c33; cursor:pointer; font-weight:600; }
-    .small-note { font-size:13px; color:#666; margin-top:10px; }
-    .options-row { display:flex; gap:12px; align-items:center; margin-top:12px; flex-wrap:wrap; }
-    .input-inline { padding:8px 10px; border-radius:6px; border:1px solid #ddd; min-width:160px; }
+    /* These are ONLY tiny helpers, you can keep them */
+    .file-item {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:6px 8px;
+      border-radius:6px;
+      background:#fbfbfb;
+      margin-bottom:8px;
+      border:1px solid #eee;
+    }
+    .file-name {
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      max-width:70%;
+    }
+    .remove-btn {
+      background:transparent;
+      border:0;
+      color:#c33;
+      cursor:pointer;
+      font-weight:600;
+    }
+    #dropPreview { margin-top:12px; text-align:left; }
   </style>
 </head>
+
 <body>
-  <div class="container">
+<div class="container">
 
-    <!-- HEADER + NAV -->
-    <div class="header">
-      <a href="{{ url_for('index') }}" style="text-decoration:none; color:inherit;">
-        <h1 style="cursor:pointer;">ConvertIQ</h1>
-      </a>
+  <!-- HEADER -->
+  <div class="header">
+    <a href="{{ url_for('index') }}" style="text-decoration:none; color:inherit;">
+      <h1 style="cursor:pointer;">ConvertIQ</h1>
+    </a>
 
-      <div class="tabs" role="tablist">
-        <a href="{{ url_for('pdfsplit_page') }}" class="tab">📄 PDF Splitter</a>
-        <a href="{{ url_for('pdf_to_images_page') }}" class="tab">🖼️ PDF → Images</a>
-        <a href="{{ url_for('image_to_pdf_page') }}" class="tab">🖼️ Images → PDF</a>
-        <a href="{{ url_for('pdf_to_docx_page') }}" class="tab">📝 PDF → Word</a>
-        <a href="{{ url_for('pdf_to_text_page') }}" class="tab">📝 PDF → Text</a>
-        <a href="{{ url_for('pdf_merge_page') }}" class="tab active">🔗 Merge PDFs</a>
-      </div>
+    <div class="tabs" role="tablist">
+      <a href="{{ url_for('pdfsplit_page') }}" class="tab">PDF Splitter</a>
+      <a href="{{ url_for('pdf_to_images_page') }}" class="tab">PDF → Images</a>
+      <a href="{{ url_for('image_to_pdf_page') }}" class="tab">Images → PDF</a>
+      <a href="{{ url_for('pdf_to_docx_page') }}" class="tab">PDF → Word</a>
+      <a href="{{ url_for('pdf_to_text_page') }}" class="tab">PDF → Text</a>
+      <a href="{{ url_for('pdf_merge_page') }}" class="tab active">Merge PDFs</a>
     </div>
-
-    <div class="content">
-      <div class="upload-section">
-        <h2>Merge PDF Files</h2>
-        <p style="color:#555;margin-top:6px;">
-          Select two or more PDF files. They will be merged in the order you select them (top → bottom).
-        </p>
-
-        <form method="post" action="{{ url_for('merge_pdfs') }}" enctype="multipart/form-data" class="upload-form" id="mergeForm">
-          <!-- multiple PDF selection (matches backend: pdf_files[]) -->
-          <input type="file" name="pdf_files[]" id="pdfFiles" accept="application/pdf" multiple required>
-
-          <!-- smart file list preview -->
-          <div class="file-list" id="fileList" style="display:none;"></div>
-
-          <div class="options-row">
-            <input type="text" name="output_name" placeholder="Output filename (optional)" class="input-inline" />
-            <label style="font-size:14px;color:#444;">
-              <input type="checkbox" name="preserve_metadata"> Preserve metadata (if available)
-            </label>
-            <span class="small-note">Max files: 50 • Max upload size controlled by server</span>
-          </div>
-
-          <br>
-          <button type="submit" class="submit-btn" style="margin-top:16px;">Merge PDFs</button>
-        </form>
-
-        <p style="text-align:center;margin-top:12px;color:#666;">
-          <a href="{{ url_for('index') }}">← Back to Home</a>
-        </p>
-      </div>
-    </div>
-
   </div>
 
-<script>
-  // Show selected files and allow removing before submit (pure client-side helper)
-  const input = document.getElementById('pdfFiles');
-  const fileListDiv = document.getElementById('fileList');
+  <!-- PAGE CONTENT -->
+  <div class="content">
+    <div class="upload-section">
 
-  function renderFileList(files) {
-    if (!files || files.length === 0) {
-      fileListDiv.style.display = 'none';
-      fileListDiv.innerHTML = '';
+      <h2>Merge PDF Files</h2>
+      <p style="color:#555;margin-top:6px;">
+        Select two or more PDF files. They will be merged in the order you select them (top → bottom).
+      </p>
+
+      <!-- FORM -->
+      <form method="post" action="{{ url_for('merge_pdfs') }}"
+            enctype="multipart/form-data" class="upload-form" id="mergeForm">
+
+        <!-- hidden input -->
+        <input type="file" name="pdf_files[]" id="pdfFiles" multiple accept="application/pdf" style="display:none;">
+
+        <!-- styled drop zone using your CSS -->
+        <div class="file-input-wrapper">
+          <label id="dropZone" for="pdfFiles" class="file-input-label" role="button">
+
+            <span class="file-icon">📄</span>
+            <span class="file-text">Choose PDF File</span>
+            <div style="font-size:13px;color:#666;margin-top:6px;">
+              or drag & drop files here
+            </div>
+
+            <!-- preview INSIDE the upload box -->
+            <div id="dropPreview"></div>
+          </label>
+        </div>
+        <br>
+        <button type="submit" class="submit-btn">Merge PDFs</button>
+      </form>
+
+      <p style="text-align:center;margin-top:12px;color:#666;">
+        <a href="{{ url_for('index') }}">← Back to Home</a>
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<!-- SCRIPT -->
+<script>
+(function() {
+
+  const input = document.getElementById("pdfFiles");
+  const dropZone = document.getElementById("dropZone");
+  const dropPreview = document.getElementById("dropPreview");
+
+  const storedFiles = [];
+
+  function fileKey(f) {
+    return `${f.name}_${f.size}_${f.lastModified}`;
+  }
+
+  function syncInputFiles() {
+    const dt = new DataTransfer();
+    storedFiles.forEach(f => dt.items.add(f));
+    input.files = dt.files;
+  }
+
+  function renderUI() {
+    if (!storedFiles.length) {
+      dropPreview.innerHTML = `<div style="color:#999;font-size:14px;">No files chosen</div>`;
       return;
     }
 
-    fileListDiv.style.display = 'block';
-    fileListDiv.innerHTML = '';
-    Array.from(files).forEach((f, idx) => {
-      const item = document.createElement('div');
-      item.className = 'file-item';
-      const name = document.createElement('div');
-      name.className = 'file-name';
-      name.textContent = `${idx+1}. ${f.name}`;
-      const size = document.createElement('div');
-      size.style.fontSize = '12px';
-      size.style.color = '#666';
-      size.textContent = (f.size / 1024 / 1024).toFixed(2) + ' MB';
+    dropPreview.innerHTML = storedFiles.map((f, i) => `
+      <div class="file-item">
+        <div class="file-name">${i+1}. ${f.name}</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-size:12px;color:#666;">
+            ${(f.size/1024/1024).toFixed(2)} MB
+          </div>
+          <button type="button" class="remove-btn" data-index="${i}">Remove</button>
+        </div>
+      </div>
+    `).join("");
 
-      const right = document.createElement('div');
-      right.style.display = 'flex';
-      right.style.alignItems = 'center';
-      right.style.gap = '10px';
-
-      const remove = document.createElement('button');
-      remove.type = 'button';
-      remove.className = 'remove-btn';
-      remove.textContent = 'Remove';
-      remove.addEventListener('click', () => {
-        // remove file at index idx by reconstructing DataTransfer
-        const dt = new DataTransfer();
-        Array.from(input.files).forEach((file, i) => {
-          if (i !== idx) dt.items.add(file);
-        });
-        input.files = dt.files;
-        renderFileList(input.files);
-      });
-
-      right.appendChild(size);
-      right.appendChild(remove);
-
-      item.appendChild(name);
-      item.appendChild(right);
-      fileListDiv.appendChild(item);
+    // remove handlers
+    dropPreview.querySelectorAll(".remove-btn").forEach(btn => {
+      btn.onclick = e => {
+        storedFiles.splice(parseInt(e.target.dataset.index), 1);
+        renderUI();
+      };
     });
+
+    syncInputFiles();
   }
 
-  input.addEventListener('change', (e) => {
-    renderFileList(e.target.files);
+  function addFiles(files) {
+    const existing = new Set(storedFiles.map(fileKey));
+    [...files].forEach(f => {
+      const k = fileKey(f);
+      if (!existing.has(k)) storedFiles.push(f);
+    });
+    renderUI();
+  }
+
+  /* --- EVENTS --- */
+
+  input.addEventListener("change", e => addFiles(e.target.files));
+
+  dropZone.addEventListener("dragover", e => {
+    e.preventDefault();
+    dropZone.style.borderColor = "#3498db";
   });
 
-  // optional: prevent submitting if less than 2 files
-  document.getElementById('mergeForm').addEventListener('submit', (e) => {
-    if (!input.files || input.files.length < 2) {
-      e.preventDefault();
-      alert('Please select at least two PDF files to merge.');
-      return false;
-    }
-    if (input.files.length > 50) {
-      e.preventDefault();
-      alert('Too many files selected. Maximum 50 files allowed.');
-      return false;
-    }
+  dropZone.addEventListener("dragleave", () => {
+    dropZone.style.borderColor = "#dee2e6";
   });
+
+  dropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    dropZone.style.borderColor = "#dee2e6";
+    addFiles(e.dataTransfer.files);
+  });
+
+  document.getElementById("mergeForm").addEventListener("submit", e => {
+    if (storedFiles.length < 2) {
+      e.preventDefault();
+      alert("Please select at least two PDF files.");
+    }
+    if (storedFiles.length > 50) {
+      e.preventDefault();
+      alert("Maximum 50 files allowed.");
+    }
+    syncInputFiles();
+  });
+
+  renderUI();
+
+})();
 </script>
 
 </body>

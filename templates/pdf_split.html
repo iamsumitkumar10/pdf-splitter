@@ -1,9 +1,10 @@
+<!-- templates/pdfsplit.html -->
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ConvertIQ — PDF to Text</title>
+  <title>ConvertIQ — PDF Splitter</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -16,20 +17,20 @@
       </a>
 
       <div class="tabs" role="tablist">
-        <a href="{{ url_for('pdfsplit_page') }}" class="tab">PDF Splitter</a>
-        <a href="{{ url_for('pdf_to_images_page') }}" class="tab">PDF → Images</a>
-        <a href="{{ url_for('image_to_pdf_page') }}" class="tab">Images → PDF</a>
+        <a href="{{ url_for('pdfsplit_page') }}"class="tab active">PDF Splitter</a>
+        <a href="{{ url_for('pdf_to_images_page') }}"class="tab">PDF → Images</a>
+        <a href="{{ url_for('image_to_pdf_page') }}"class="tab">Images → PDF</a>
         <a href="{{ url_for('pdf_to_docx_page') }}" class="tab">PDF → Word</a>
-        <a href="{{ url_for('pdf_to_text_page') }}" class="tab active">PDF → Text</a>
+        <a href="{{ url_for('pdf_to_text_page') }}" class="tab">PDF → Text</a>
         <a href="{{ url_for('pdf_merge_page') }}" class="tab">Merge PDFs</a>
       </div>
     </div>
 
     <div class="content">
       <div class="upload-section">
-        <h2>Convert PDF to Plain Text (.txt)</h2>
+        <h2>Split PDF into Pages</h2>
 
-        <form method="post" action="{{ url_for('pdf_to_text_convert') }}" enctype="multipart/form-data" class="upload-form">
+        <form method="post" action="{{ url_for('split_pdf') }}" enctype="multipart/form-data" class="upload-form">
           <div class="file-input-wrapper">
             <input type="file" name="pdf_file" accept="application/pdf" id="fileInput" required>
             <label for="fileInput" class="file-input-label">
@@ -38,26 +39,10 @@
             </label>
           </div>
 
-          <div class="selected-file" id="selectedFile" style="display:none;"></div>
-
-          <div class="options" style="margin-top:12px;">
-            <label>
-              Start page (optional):
-              <input type="number" name="start_page" min="1" placeholder="1" style="width:80px;">
-            </label>
-
-            <label style="margin-left:12px;">
-              End page (optional):
-              <input type="number" name="end_page" min="1" placeholder="Last" style="width:80px;">
-            </label>
-
-            <label style="display:block;margin-top:8px;">
-              <input type="checkbox" name="force_zip"> Force TXT inside ZIP (useful for large single text)
-            </label>
-          </div>
+          <div class="selected-file" id="selectedFile"></div>
 
           <br>
-          <button type="submit" class="submit-btn">Convert to TXT</button>
+          <button type="submit" class="submit-btn">Split PDF</button>
         </form>
       </div>
     </div>
@@ -77,8 +62,6 @@ document.getElementById('fileInput').addEventListener('change', function(e) {
     if (file) {
         div.innerHTML = `<strong>Selected:</strong> ${file.name}<br><small>${(file.size/1024/1024).toFixed(2)} MB</small>`;
         div.style.display = 'block';
-    } else {
-        div.style.display = 'none';
     }
 });
 </script>
