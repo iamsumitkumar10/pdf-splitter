@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ConvertIQ — Images to PDF</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+
+    <div class="header">
+      <a href="{{ url_for('index') }}" style="text-decoration:none; color:inherit;"><h1 style="cursor:pointer;">ConvertIQ</h1></a>
+
+      <div class="tabs" role="tablist">
+        <a href="{{ url_for('pdfsplit_page') }}"class="tab">PDF Splitter</a>
+        <a href="{{ url_for('pdf_to_images_page') }}"class="tab">PDF → Images</a>
+        <a href="{{ url_for('image_to_pdf_page') }}"class="tab active">Images → PDF</a>
+        <a href="{{ url_for('pdf_to_docx_page') }}" class="tab">PDF → Word</a>
+        <a href="{{ url_for('pdf_to_text_page') }}" class="tab">PDF → Text</a>
+        <a href="{{ url_for('pdf_merge_page') }}" class="tab">Merge PDFs</a>
+        <a href="{{ url_for('pdf_compress_page') }}" class="tab">Compress PDF</a>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="upload-section">
+        <h2>Convert Images to PDF</h2>
+
+        <!-- keep action the same; submission is handled by JS -->
+        <form id="uploadForm" method="post" action="{{ url_for('images_to_pdf') }}" enctype="multipart/form-data" class="upload-form">
+
+          <div class="file-input-wrapper">
+            <!-- the input remains; user can open it multiple times -->
+            <input type="file" name="images[]" accept="image/*" id="imagesInput" multiple>
+            <label for="imagesInput" class="file-input-label" style="cursor:pointer;">
+              <span class="file-icon">🖼️</span>
+              <span class="file-text">Choose Images</span>
+            </label>
+          </div>
+
+          <div class="selected-file" id="imagesSelected" style="display:none;margin-top:12px;"></div>
+
+          <br>
+          <button type="submit" class="submit-btn" id="submitBtn">Convert to PDF</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="features">
+      <p style="text-align:center;margin-top:12px;">
+        <a href="{{ url_for('index') }}">← Back to Home</a>
+      </p>
+    </div>
+
+  </div>
+
+<script>
+/*
+  Behavior:
+  - Each time the user picks files with the input, those files are ADDED to the in-memory set.
+  - The preview shows all selected images.
+  - On submit, we create FormData and append all stored files as images[] and POST to your endpoint.
+*/
+
+// Map to keep unique files (key: name::size::lastModified)
+const storedFiles = new Map();
+const input = document.getElementById('imagesInput');
+const selectedDiv = document.getElementById('imagesSelected');
+const form = document.getElementById('uploadForm');
+const submitBtn = document.getElementById('submitBtn');
+
+function fileKey(f){ return `${f.name}::${f.size}::${f.lastModified}`; }
+
+function addFiles(fileList){
+  for(const f of fileList){
+    if(!f.type.startsWith('image/')) continue; // skip non-images
+    const k = fileKey(f);
+    if(!storedFiles.has(k)){
+      storedFiles.set(k, f);
+    }
+  }
+  renderList();
+}
+
+function renderList(){
+  if(storedFiles.size === 0){
+    selectedDiv.style.display = 'none';
+    selectedDiv.innerHTML = '';
+    return;
+  }
+  let html = `<strong>${storedFiles.size} image${storedFiles.size>1?'s':''} selected:</strong><ul style="margin-top:8px;padding-left:18px;">`;
+  for(const [k,f] of storedFiles.entries()){
+    const sizeMB = (f.size/1024/1024).toFixed(2);
+    html += `<li>${f.name} — ${sizeMB} MB <button type="button" data-key="${k}" style="margin-left:8px">Remove</button></li>`;
+  }
+  html += '</ul>';
+  selectedDiv.innerHTML = html;
+  selectedDiv.style.display = 'block';
+}
+
+// remove handler (delegation)
+selectedDiv.addEventListener('click', (e)=>{
+  const btn = e.target;
+  if(btn.tagName === 'BUTTON' && btn.dataset.key){
+    storedFiles.delete(btn.dataset.key);
+    renderList();
+  }
+});
+
+// when user selects files (can open picker multiple times)
+input.addEventListener('change', (e) => {
+  const files = Array.from(e.target.files || []);
+  addFiles(files);
+  // clear the file input so the same file(s) can be re-selected if needed
+  input.value = '';
+});
+
+// handle form submit: build FormData from storedFiles and POST
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if(storedFiles.size === 0){
+    alert('Please select at least one image.');
+    return;
+  }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Uploading...';
+
+  try{
+    const fd = new FormData();
+    for(const f of storedFiles.values()){
+      fd.append('images[]', f, f.name); // matches Flask getlist('images[]')
+    }
+
+    const res = await fetch(form.action, { method: 'POST', body: fd });
+    if(!res.ok){
+      const txt = await res.text();
+      throw new Error(txt || res.statusText);
+    }
+
+    // assume the response is a PDF blob to download
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'converted.pdf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+
+    // clear UI after success
+    storedFiles.clear();
+    renderList();
+  }catch(err){
+    console.error(err);
+    alert('Upload failed: ' + (err.message || err));
+  }finally{
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Convert to PDF';
+  }
+});
+</script>
+
+</body>
+</html>

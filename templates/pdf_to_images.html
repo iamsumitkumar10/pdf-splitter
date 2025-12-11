@@ -1,0 +1,94 @@
+<!-- templates/pdf_to_images.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ConvertIQ — PDF to Images</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="{{ url_for('index') }}" style="text-decoration:none; color:inherit;">
+        <h1 style="cursor:pointer;">ConvertIQ</h1>
+      </a>
+
+      <div class="tabs" role="tablist">
+        <a href="{{ url_for('pdfsplit_page') }}" class="tab">PDF Splitter</a>
+        <a href="{{ url_for('pdf_to_images_page') }}" class="tab active">PDF → Images</a>
+        <a href="{{ url_for('image_to_pdf_page') }}" class="tab">Images → PDF</a>
+        <a href="{{ url_for('pdf_to_docx_page') }}" class="tab">PDF → Word</a>
+        <a href="{{ url_for('pdf_to_text_page') }}" class="tab">PDF → Text</a>
+        <a href="{{ url_for('pdf_merge_page') }}" class="tab">Merge PDFs</a>
+        <a href="{{ url_for('pdf_compress_page') }}" class="tab">Compress PDF</a>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="upload-section">
+        <h2>Convert PDF to Images (JPG / PNG / WEBP / TIFF)</h2>
+
+        <form method="post" action="{{ url_for('pdf_to_images_convert') }}" enctype="multipart/form-data" class="upload-form">
+          <div class="file-input-wrapper">
+            <input type="file" name="pdf_file" accept="application/pdf" id="pdfInput" required>
+            <label for="pdfInput" class="file-input-label">
+              <span class="file-icon">📄</span>
+              <span class="file-text">Choose PDF File</span>
+            </label>
+          </div>
+
+          <div class="options" style="margin-top:12px;">
+            <label>
+              Output format:
+              <select name="format">
+                <option value="jpg">JPG (good general)</option>
+                <option value="png">PNG (lossless)</option>
+                <option value="webp">WEBP (smaller, modern)</option>
+                <option value="tiff">TIFF (high quality)</option>
+              </select>
+            </label>
+            <br><br>
+            <!-- <label>
+              DPI:
+              <input type="number" name="dpi" value="150" min="72" max="1200" style="width:100px;">
+            </label> -->
+            <!-- <br><br> -->
+            <!-- <label>
+              Page range (optional): from
+              <input type="number" name="start_page" min="1" style="width:70px;">
+              to
+              <input type="number" name="end_page" min="1" style="width:70px;">
+            </label>
+            <br><br>
+            <label> -->
+              <input type="checkbox" name="force_zip">
+              Always return ZIP (even for single page)
+            </label>
+          </div>
+
+          <br>
+          <button type="submit" class="submit-btn">Convert</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="features">
+      <p style="text-align:center;margin-top:12px;">
+        <a href="{{ url_for('index') }}">← Back to Home</a>
+      </p>
+    </div>
+  </div>
+
+<script>
+const pdfInput = document.getElementById('pdfInput');
+if (pdfInput) {
+  pdfInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const div = document.getElementById('selectedPdf');
+    // optional UI, not required
+  });
+}
+</script>
+</body>
+</html>

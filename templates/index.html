@@ -1,0 +1,51 @@
+<!-- templates/index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ConvertIQ</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+
+    <!-- 🔥 HEADER + NAVBAR -->
+    <div class="header">
+      <!-- <h1>ConvertIQ</h1> -->
+      <a href="{{ url_for('index') }}" style="text-decoration:none; color:inherit;">
+        <h1 style="cursor:pointer;">ConvertIQ</h1>
+      </a>
+      <p>Keep Your Data Safe</p>
+
+      <div class="tabs" role="tablist">
+        <a href="{{ url_for('pdfsplit_page') }}"class="tab">PDF Splitter</a>
+        <a href="{{ url_for('pdf_to_images_page') }}"class="tab">PDF → Image</a>
+        <a href="{{ url_for('image_to_pdf_page') }}"class="tab">Images → PDF</a>
+        <a href="{{ url_for('pdf_to_docx_page') }}"class="tab">PDF → Word</a>
+        <a href="{{ url_for('pdf_to_text_page') }}" class="tab">PDF → Text</a>
+        <a href="{{ url_for('pdf_merge_page') }}" class="tab">Merge PDFs</a>
+        <a href="{{ url_for('pdf_compress_page') }}" class="tab">Compress PDFs</a>
+      </div>
+    </div>
+
+    <div class="features" style="padding:30px;text-align:center;">
+      <h3>Select a Tool</h3>
+      <p style="margin-top:12px;color:#666;">
+        Choose from the tools above to begin.
+      </p>
+    </div>
+    
+    <div class="features">
+      <h3>Features:</h3>
+      <ul>
+        <li>⚡ Fast, in-memory processing</li>
+        <li>🔒 100% privacy — files are not saved on server</li>
+        <li>📦 Download ZIP when multiple outputs generated</li>
+        <li>🧾 Supports multiple image formats</li>
+        <li>📚 Works with large PDFs</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

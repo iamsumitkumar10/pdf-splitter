@@ -22,7 +22,7 @@ def allowed_image_filename(filename):
 
 @app.route("/")
 def index():
-    return redirect("http://localhost:3000/")
+    return render_template('index.html')
 
 @app.route("/pdfsplit")
 def pdfsplit_page():

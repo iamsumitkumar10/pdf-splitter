@@ -1,0 +1,73 @@
+<!-- templates/pdf_to_docx.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ConvertIQ — PDF to Word</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+
+    <!-- 🔥 HEADER + NAVBAR -->
+    <div class="header">
+      <a href="{{ url_for('index') }}" style="text-decoration:none; color:inherit;">
+        <h1 style="cursor:pointer;">ConvertIQ</h1>
+      </a>
+
+      <div class="tabs" role="tablist">
+        <a href="{{ url_for('pdfsplit_page') }}" class="tab">PDF Splitter</a>
+        <a href="{{ url_for('pdf_to_images_page') }}"class="tab">PDF → Images</a>
+        <a href="{{ url_for('image_to_pdf_page') }}" class="tab">Images → PDF</a>
+        <a href="{{ url_for('pdf_to_docx_page') }}" class="tab active">PDF → Word</a>
+        <a href="{{ url_for('pdf_to_text_page') }}" class="tab">PDF → Text</a>
+        <a href="{{ url_for('pdf_merge_page') }}" class="tab">Merge PDFs</a>
+        <a href="{{ url_for('pdf_compress_page') }}" class="tab">Compress PDF</a>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <div class="upload-section">
+        <h2>Convert PDF to Word</h2>
+
+        <form method="post" action="{{ url_for('pdf_to_docx_convert') }}" enctype="multipart/form-data" class="upload-form">
+
+          <div class="file-input-wrapper">
+            <input type="file" name="pdf_file" accept="application/pdf" id="pdfInput" required>
+            <label for="pdfInput" class="file-input-label">
+              <span class="file-icon">📄</span>
+              <span class="file-text">Choose PDF File</span>
+            </label>
+          </div>
+
+          <div class="selected-file" id="selectedPdf"></div>
+
+          <br>
+          <button type="submit" class="submit-btn">Convert to Word (DOCX)</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="features">
+      <p style="text-align:center;margin-top:12px;">
+        <a href="{{ url_for('index') }}">← Back to Home</a>
+      </p>
+    </div>
+
+  </div>
+
+<script>
+document.getElementById('pdfInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const div = document.getElementById('selectedPdf');
+    if (file) {
+        div.innerHTML = `<strong>Selected:</strong> ${file.name}<br><small>${(file.size/1024/1024).toFixed(2)} MB</small>`;
+        div.style.display = 'block';
+    }
+});
+</script>
+
+</body>
+</html>
