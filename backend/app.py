@@ -9,6 +9,7 @@ from PyPDF2 import PdfReader, PdfWriter
 from PIL import Image
 import tempfile
 from pdf2docx import Converter
+from flask import redirect
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # max 200MB upload
@@ -21,7 +22,7 @@ def allowed_image_filename(filename):
 
 @app.route("/")
 def index():
-    return render_template('index.html')
+    return redirect("http://localhost:3000/")
 
 @app.route("/pdfsplit")
 def pdfsplit_page():
