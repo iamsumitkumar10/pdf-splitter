@@ -51,6 +51,10 @@ def pdf_merge_page():
     # simple page route (you will create pdf_merge.html later)
     return render_template("pdf_merge.html")
 
+@app.route("/pdf-compress")
+def pdf_compress_page():
+    return render_template("pdf_compress.html")
+
 
 
 
@@ -475,6 +479,187 @@ def merge_pdfs():
         except Exception:
             pass
 
+# ---- POST: Compress PDF ----
+@app.route("/compress", methods=["POST"])
+def compress_pdf():
+    """
+    Compress uploaded PDF by rasterizing pages at a lower DPI and rebuilding a new PDF.
+    Parameters (form):
+      - pdf_file: uploaded file (required)
+      - dpi: target DPI (int, default 100). Lower -> smaller file.
+      - start_page, end_page: optional 1-based inclusive page range
+      - image_format: 'jpeg' or 'png' (jpeg gives smaller size) default 'jpeg'
+      - jpeg_quality: (optional) 0-100 for jpeg compression, default 75
+    Returns compressed PDF as attachment.
+    NOTE: result will be image-based PDF (text not selectable).
+    """
+    if 'pdf_file' not in request.files:
+        abort(400, "No file part")
+
+    file = request.files['pdf_file']
+    if file.filename == "":
+        abort(400, "No selected file")
+
+    filename = secure_filename(file.filename)
+    if not filename.lower().endswith('.pdf'):
+        abort(400, "Uploaded file is not a PDF")
+
+    # read bytes
+    pdf_bytes = file.read()
+    if not pdf_bytes:
+        abort(400, "Empty file uploaded")
+
+    # parse options
+    try:
+        target_dpi = int(request.form.get('dpi', 100))
+        if target_dpi <= 0 or target_dpi > 1200:
+            target_dpi = 100
+    except Exception:
+        target_dpi = 100
+
+    image_format = request.form.get('image_format', 'jpeg').lower()
+    if image_format not in ('jpeg', 'png'):
+        image_format = 'jpeg'
+
+    try:
+        jpeg_quality = int(request.form.get('jpeg_quality', 75))
+        if jpeg_quality < 1 or jpeg_quality > 100:
+            jpeg_quality = 75
+    except Exception:
+        jpeg_quality = 75
+
+    # optional page range (1-based inclusive)
+    start_page = request.form.get('start_page', '').strip()
+    end_page = request.form.get('end_page', '').strip()
+
+    # open original with PyMuPDF
+    try:
+        src_doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    except Exception as e:
+        abort(400, f"Invalid PDF: {e}")
+
+    page_count = src_doc.page_count
+
+    # parse page range safely
+    try:
+        if start_page and end_page:
+            sp = max(1, int(start_page))
+            ep = min(page_count, int(end_page))
+            if sp > ep:
+                sp, ep = ep, sp
+        elif start_page and not end_page:
+            sp = max(1, int(start_page))
+            ep = page_count
+        elif not start_page and end_page:
+            sp = 1
+            ep = min(page_count, int(end_page))
+        else:
+            sp = 1
+            ep = page_count
+    except Exception:
+        sp, ep = 1, page_count
+
+    # Build new PDF (image-based)
+    out_temp = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+    out_path = out_temp.name
+    out_temp.close()
+
+    new_doc = fitz.open()  # blank PDF
+    try:
+        zoom = target_dpi / 72.0
+        mat = fitz.Matrix(zoom, zoom)
+
+        for pno in range(sp - 1, ep):
+            page = src_doc.load_page(pno)
+            # render to pixmap (rasterize)
+            pix = page.get_pixmap(matrix=mat, alpha=False)
+            # get image bytes in requested format (JPEG/PNG)
+            if image_format == 'jpeg':
+                # produce jpeg bytes
+                img_bytes = pix.tobytes(output='jpeg')
+                # Optionally we could further re-encode with quality, but PyMuPDF's t obytes('jpeg')
+                # produces reasonable compression. To enforce quality we would need PIL re-encode.
+                # Do re-encode with PIL if user provided jpeg_quality != 75 (default)
+                if jpeg_quality != 75:
+                    from PIL import Image
+                    import io as _io
+                    img = Image.open(_io.BytesIO(img_bytes))
+                    jpeg_buf = _io.BytesIO()
+                    img.save(jpeg_buf, format='JPEG', quality=jpeg_quality, optimize=True)
+                    img_bytes = jpeg_buf.getvalue()
+            else:
+                img_bytes = pix.tobytes(output='png')
+
+            # Create a new page in new_doc sized to the image dimensions (in points)
+            # fitz.Rect expects coordinates in points; pix.width/pix.height are in pixels.
+            # Convert pixel dimensions to points using target_dpi: points = pixels * 72 / dpi
+            width_pts = pix.width * 72.0 / target_dpi
+            height_pts = pix.height * 72.0 / target_dpi
+            new_page = new_doc.new_page(width=width_pts, height=height_pts)
+
+            # Insert the image covering full page
+            img_rect = fitz.Rect(0, 0, width_pts, height_pts)
+            # insert using the image bytes stream
+            new_page.insert_image(img_rect, stream=img_bytes)
+
+        # Save new_doc to temporary path with compression flags
+        # garbage/deflate/clean may reduce size
+        new_doc.save(out_path, garbage=4, deflate=True, clean=True)
+    except Exception as e:
+        # cleanup
+        try:
+            new_doc.close()
+        except Exception:
+            pass
+        try:
+            src_doc.close()
+        except Exception:
+            pass
+        try:
+            if os.path.exists(out_path):
+                os.unlink(out_path)
+        except Exception:
+            pass
+        abort(500, f"Compression failed: {e}")
+    finally:
+        try:
+            new_doc.close()
+        except Exception:
+            pass
+        try:
+            src_doc.close()
+        except Exception:
+            pass
+
+    # read output file and send
+    try:
+        with open(out_path, "rb") as f:
+            out_bytes = f.read()
+    except Exception as e:
+        # ensure cleanup
+        try:
+            if os.path.exists(out_path):
+                os.unlink(out_path)
+        except Exception:
+            pass
+        abort(500, f"Failed to read compressed PDF: {e}")
+    finally:
+        # remove temp file
+        try:
+            if os.path.exists(out_path):
+                os.unlink(out_path)
+        except Exception:
+            pass
+
+    out_io = io.BytesIO(out_bytes)
+    out_io.seek(0)
+    download_name = f"{os.path.splitext(filename)[0]}_compressed.pdf"
+    return send_file(
+        out_io,
+        mimetype="application/pdf",
+        as_attachment=True,
+        download_name=download_name
+    )
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

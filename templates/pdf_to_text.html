@@ -22,6 +22,7 @@
         <a href="{{ url_for('pdf_to_docx_page') }}" class="tab">PDF → Word</a>
         <a href="{{ url_for('pdf_to_text_page') }}" class="tab active">PDF → Text</a>
         <a href="{{ url_for('pdf_merge_page') }}" class="tab">Merge PDFs</a>
+        <a href="{{ url_for('pdf_compress_page') }}" class="tab">Compress PDF</a>
       </div>
     </div>
 
@@ -39,24 +40,6 @@
           </div>
 
           <div class="selected-file" id="selectedFile" style="display:none;"></div>
-
-          <div class="options" style="margin-top:12px;">
-            <label>
-              Start page (optional):
-              <input type="number" name="start_page" min="1" placeholder="1" style="width:80px;">
-            </label>
-
-            <label style="margin-left:12px;">
-              End page (optional):
-              <input type="number" name="end_page" min="1" placeholder="Last" style="width:80px;">
-            </label>
-
-            <label style="display:block;margin-top:8px;">
-              <input type="checkbox" name="force_zip"> Force TXT inside ZIP (useful for large single text)
-            </label>
-          </div>
-
-          <br>
           <button type="submit" class="submit-btn">Convert to TXT</button>
         </form>
       </div>
