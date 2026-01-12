@@ -10,6 +10,7 @@ from PIL import Image
 import tempfile
 from pdf2docx import Converter
 from flask import redirect
+from PIL import Image, UnidentifiedImageError
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 200 * 1024 * 1024  # max 200MB upload
@@ -229,52 +230,106 @@ def pdf_to_images_convert():
     )
 
 
+# @app.route("/images-to-pdf", methods=["POST"])
+# def images_to_pdf():
+#     files = request.files.getlist('images[]')
+#     if not files or len(files) == 0:
+#         abort(400, "No images uploaded")
+
+#     output_name = request.form.get('output_name', 'images_combined.pdf')
+#     output_name = secure_filename(output_name)
+#     if not output_name.lower().endswith('.pdf'):
+#         output_name = output_name + '.pdf'
+
+#     images = []
+#     try:
+#         for f in files:
+#             if f and f.filename:
+#                 if not allowed_image_filename(f.filename):
+#                     abort(400, f"Unsupported image type: {f.filename}")
+#                 img = Image.open(f.stream)
+#                 img = img.convert("RGB")
+#                 images.append(img.copy())
+#                 img.close()
+#     except Exception as e:
+#         abort(400, f"Error processing images: {e}")
+
+#     if len(images) == 0:
+#         abort(400, "No valid images found")
+
+#     pdf_bytes = io.BytesIO()
+#     try:
+#         first_img, rest = images[0], images[1:]
+#         first_img.save(pdf_bytes, format='PDF', save_all=True, append_images=rest)
+#         pdf_bytes.seek(0)
+#     except Exception as e:
+#         abort(500, f"Failed to create PDF: {e}")
+#     finally:
+#         for im in images:
+#             try:
+#                 im.close()
+#             except Exception:
+#                 pass
+
+#     return send_file(
+#         pdf_bytes,
+#         mimetype="application/pdf",
+#         as_attachment=True,
+#         download_name=output_name
+#     )
+
+
+
 @app.route("/images-to-pdf", methods=["POST"])
 def images_to_pdf():
     files = request.files.getlist('images[]')
-    if not files or len(files) == 0:
+    if not files:
         abort(400, "No images uploaded")
 
-    output_name = request.form.get('output_name', 'images_combined.pdf')
-    output_name = secure_filename(output_name)
-    if not output_name.lower().endswith('.pdf'):
-        output_name = output_name + '.pdf'
-
     images = []
-    try:
-        for f in files:
-            if f and f.filename:
-                if not allowed_image_filename(f.filename):
-                    abort(400, f"Unsupported image type: {f.filename}")
-                img = Image.open(f.stream)
-                img = img.convert("RGB")
-                images.append(img.copy())
-                img.close()
-    except Exception as e:
-        abort(400, f"Error processing images: {e}")
 
-    if len(images) == 0:
+    for f in files:
+        if not f or not f.filename:
+            continue
+
+        try:
+            # Read file into memory
+            img_bytes = f.read()
+            img_stream = io.BytesIO(img_bytes)
+
+            # Verify image (this catches fake/corrupt images)
+            with Image.open(img_stream) as im:
+                im.verify()
+
+            # Re-open AFTER verify (very important)
+            img_stream.seek(0)
+            img = Image.open(img_stream).convert("RGB")
+            images.append(img)
+
+        except UnidentifiedImageError:
+            print(f"Skipping invalid image: {f.filename}")
+            continue
+        except Exception as e:
+            print(f"Error processing {f.filename}: {e}")
+            continue
+
+    if not images:
         abort(400, "No valid images found")
 
     pdf_bytes = io.BytesIO()
-    try:
-        first_img, rest = images[0], images[1:]
-        first_img.save(pdf_bytes, format='PDF', save_all=True, append_images=rest)
-        pdf_bytes.seek(0)
-    except Exception as e:
-        abort(500, f"Failed to create PDF: {e}")
-    finally:
-        for im in images:
-            try:
-                im.close()
-            except Exception:
-                pass
+    images[0].save(
+        pdf_bytes,
+        format="PDF",
+        save_all=True,
+        append_images=images[1:]
+    )
+    pdf_bytes.seek(0)
 
     return send_file(
         pdf_bytes,
         mimetype="application/pdf",
         as_attachment=True,
-        download_name=output_name
+        download_name="images_combined.pdf"
     )
 
 # convert endpoint
