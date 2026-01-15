@@ -1,0 +1,186 @@
+# name: Python CI Pipeline
+
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       - name: Set up Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: "3.10"
+
+#       - name: Install dependencies
+#         run: |
+#           python -m pip install --upgrade pip
+#           pip install -r requirements.txt
+
+#       - name: Run tests
+#         run: pytest
+
+
+
+# worling only create docker images here
+
+# name: Python CI + Docker Build
+
+# on:
+#   push:
+#     branches: [ main ]
+
+# jobs:
+#   test-and-build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Set up Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: "3.10"
+
+#       - name: Install dependencies
+#         run: |
+#           pip install -r requirements.txt
+
+#       - name: Run tests
+#         run: pytest
+
+#       - name: Build Docker image
+#         run: docker build -t github-actions-demo:latest .
+
+
+# upload docker images in docker hub
+# name: Python CI + Docker Hub Push
+
+# on:
+#   push:
+#     branches: [ main ]
+
+# jobs:
+#   test-build-push:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Set up Python
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: "3.10"
+
+#       - name: Install dependencies
+#         run: |
+#           pip install -r requirements.txt
+
+#       - name: Run tests
+#         run: pytest
+
+#       - name: Login to Docker Hub
+#         uses: docker/login-action@v3
+#         with:
+#           username: ${{ secrets.DOCKER_USERNAME }}
+#           password: ${{ secrets.DOCKER_PASSWORD }}
+
+#       - name: Build Docker image
+#         run: |
+#           docker build -t iamsumitkumar/python-github-action:latest .
+
+#       - name: Push Docker image
+#         run: |
+#           docker push iamsumitkumar/python-github-action:latest
+
+
+
+# store docker repo name as variable
+name: ConvertIQ
+
+on:
+  push:
+    branches: [ dev ]
+
+env:
+  DOCKER_IMAGE: iamsumitkumar/convertiq  # Docker Repo Name 
+  DOCKER_TAG: v1.0   # Docker version variable
+
+jobs:
+  test-build-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker image
+        run: |
+          docker build -t $DOCKER_IMAGE:$DOCKER_TAG .
+
+      - name: Push Docker image
+        run: |
+          docker push $DOCKER_IMAGE:$DOCKER_TAG
+
+      - name: Email on Success
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "✅ CI Success - Docker Image Pushed"
+          to: ${{ secrets.EMAIL_TO }}
+          from: GitHub Actions
+          body: |
+            CI Pipeline Succeeded 🎉
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+
+            Docker Image:
+            ${{ env.DOCKER_IMAGE }}:${{ env.DOCKER_TAG }}
+
+      - name: Email on Failure
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "❌ CI Failed - Action Required"
+          to: ${{ secrets.EMAIL_TO }}
+          from: GitHub Actions
+          body: |
+            CI Pipeline Failed ❌
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+
+            Please check GitHub Actions logs.
